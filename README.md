@@ -1,6 +1,6 @@
 # 🤖 Python Log Checker - Docker Monitoring App
 
-Eine schlanke Docker-Anwendung für Server-Backup-Monitoring mit Cron-Job-Management, Python-Script-Ausführung und E-Mail-Benachrichtigungen.
+Eine schlanke Docker-Anwendung für Server-Backup-Monitoring mit **erweiterter checkbackup-Integration**. Unterstützt zeitbasierte Log-Verzeichnisse (YYYY-MM-DD), spezifische Dateien-Checks und Schlüsselwort-basierte Fehlersuche - **100% kompatibel mit bestehenden Unraid checkbackup-Setups**.
 
 ## 📋 Überblick
 
@@ -15,7 +15,34 @@ Diese Docker-Anwendung überwacht Server-Backup-Logs automatisch durch geplante 
 - 🏥 **Health Checks**: Umfassende Container-Gesundheitsprüfung
 - 📊 **Detaillierte Berichte**: Strukturierte Analyse-Berichte mit Status-Übersicht
 
+### 🚀 **NEU: Erweiterte checkbackup-Integration**
+
+- 📅 **Zeitbasierte Log-Verzeichnisse**: Automatische Prüfung von YYYY-MM-DD strukturierten Logs
+- 📋 **Konfigurierbare Dateilisten**: Flexible Definition erforderlicher Log-Dateien
+- 🔍 **Schlüsselwort-Scanning**: Erweiterte Fehlersuche mit konfigurierbaren Keywords
+- 📎 **E-Mail-Anhänge**: Automatischer Versand von Fehler-Reports als Datei-Anhang
+- 🔄 **Migration von Unraid**: Einfache Migration bestehender checkbackup-Konfigurationen
+- ⚙️ **100% Kompatibilität**: Drop-in Replacement für bestehende checkbackup-Scripts
+
 ## 🚀 Schnellstart
+
+### Für bestehende checkbackup-Benutzer (Unraid)
+
+```bash
+# 1. Migration der bestehenden Konfiguration
+python migrate_from_checkbackup.py /path/to/your/checkbackup/
+
+# 2. Konfiguration ins Docker-Projekt kopieren
+cp migrated_config/* ./app/config/
+
+# 3. Volume-Mappings in docker-compose.yml anpassen
+# (siehe migrated_config/docker-compose-volumes.txt)
+
+# 4. Container starten
+docker-compose up -d
+```
+
+### Für neue Installationen
 
 ### 1. Repository klonen
 ```bash
@@ -83,16 +110,63 @@ cron_jobs:
 
 ### Volume-Mappings anpassen
 
-In `docker-compose.yml`:
-
+#### Für checkbackup-Migration (Unraid):
 ```yaml
 volumes:
-  # Deine Backup-Log-Verzeichnisse
+  # Hauptverzeichnis mit Datums-Unterordnern (YYYY-MM-DD)
+  - /mnt/user/logs/rsync:/app/data/logs:ro
+  
+  # Ausgabe-Verzeichnis für Reports
+  - /mnt/user/logs/logcheck:/app/logs/logcheck:rw
+  
+  # Konfigurationsdateien
+  - ./app/config:/app/config:ro
+```
+
+#### Für Standard-Monitoring:
+```yaml
+volumes:
+  # Standard Backup-Log-Verzeichnisse
   - /var/log/backup:/app/data/backup:ro
   - /var/log/system:/app/data/system:ro
 ```
 
 ## 📁 Verzeichnisstruktur
+
+### Standard-Struktur:
+```
+/app
+├── config/
+│   ├── config.yaml          # Hauptkonfiguration
+│   ├── logfilelist.txt      # NEU: Liste erforderlicher Log-Dateien
+│   └── keywords.txt         # NEU: Schlüsselwörter für Fehlersuche
+├── scripts/
+│   ├── advanced_backup_checker.py  # NEU: Erweiterte checkbackup-Integration
+│   ├── backup_monitor.py           # Standard Backup-Monitoring
+│   ├── email_utils.py              # E-Mail-Utility
+│   └── [weitere_scripts]
+├── logs/
+│   ├── logcheck/            # NEU: Ausgabe für Backup-Check-Reports
+│   └── *.log               # Anwendungs-Logs
+└── data/
+    ├── logs/               # NEU: Zeitbasierte Log-Verzeichnisse (YYYY-MM-DD)
+    ├── backup/             # Standard Backup-Logs
+    └── system/             # Standard System-Logs
+```
+
+### checkbackup-kompatible Log-Struktur:
+```
+/app/data/logs/
+├── 2024-12-29/            # Heutiger Tag
+│   ├── Administration.log
+│   ├── Nevaris.log
+│   └── Share_MSSQL.log
+├── 2024-12-28/            # Gestern
+│   ├── Administration.log
+│   └── Share_MSSQL.log    # Nevaris.log fehlt = Fehler!
+└── 2024-12-27/            # Vorgestern
+    └── ...                # Weitere Tage
+```
 
 ```
 /app
@@ -109,9 +183,47 @@ volumes:
     └── system/             # Gemappte System-Logs
 ```
 
-## 🔧 Entwicklung & Anpassung
+## 🔧 Konfiguration & Anpassung
 
-### Eigene Monitoring-Scripts hinzufügen
+### checkbackup-Konfiguration
+
+#### 1. Erforderliche Log-Dateien definieren (`logfilelist.txt`):
+```
+Administration.log
+Nevaris.log
+Share_MSSQL.log
+Database_Backup.log
+```
+
+#### 2. Schlüsselwörter für Fehlersuche (`keywords.txt`):
+```
+denied
+Denied
+Warn
+warn
+Warning
+fail
+Fail
+error
+Error
+ERROR
+critical
+Critical
+CRITICAL
+```
+
+#### 3. Erweiterte Konfiguration in `config.yaml`:
+```yaml
+advanced_backup_check:
+  server_name: "Mein-Server"              # Name für E-Mail-Betreff
+  log_directory: "/app/data/logs"          # Basis-Verzeichnis
+  output_directory: "/app/logs/logcheck"   # Report-Ausgabe
+  days_to_check: 1                        # Anzahl Tage prüfen
+  start_day_offset: 0                     # 0 = heute, 1 = gestern
+  email_subject_prefix: "Backup-Check"    # E-Mail-Betreff-Präfix
+```
+
+### Standard Monitoring-Scripts hinzufügen
 
 1. Script in `app/scripts/` erstellen
 2. E-Mail-Utility importieren:
@@ -124,7 +236,24 @@ sender.send_error_notification("script_name", "Fehlermeldung")
 
 3. Cron-Job in `config.yaml` hinzufügen
 
-### Beispiel-Script-Struktur
+### checkbackup-kompatibles Script-Beispiel
+
+```python
+#!/usr/bin/env python3
+from advanced_backup_checker import AdvancedBackupChecker
+
+def main():
+    checker = AdvancedBackupChecker()
+    success = checker.check_log_files()
+    
+    if not success:
+        exit(1)
+
+if __name__ == "__main__":
+    main()
+```
+
+### Standard Monitoring-Script-Struktur
 
 ```python
 #!/usr/bin/env python3
@@ -149,6 +278,38 @@ if __name__ == "__main__":
     main()
 ```
 
+## 🔄 Migration von checkbackup (Unraid)
+
+### Automatische Migration
+
+```bash
+# 1. Migration ausführen
+python migrate_from_checkbackup.py ./checkbackup/
+
+# 2. Generierte Dateien prüfen
+ls migrated_config/
+# config.yaml
+# logfilelist.txt  
+# keywords.txt
+# docker-compose-volumes.txt
+
+# 3. Dateien ins Projekt kopieren
+cp migrated_config/config.yaml ./app/config/
+cp migrated_config/logfilelist.txt ./app/config/
+cp migrated_config/keywords.txt ./app/config/
+
+# 4. Volume-Mappings anpassen
+cat migrated_config/docker-compose-volumes.txt
+# Anweisungen für docker-compose.yml
+```
+
+### Manuelle Migration
+
+1. **Pfade anpassen**: `/mnt/user/logs/rsync/` → `/app/data/logs`
+2. **Konfigurationsdateien kopieren**: `Logfilelist.txt` → `logfilelist.txt`
+3. **E-Mail-Einstellungen übertragen**: `config.txt` → `config.yaml`
+4. **Cron-Job einrichten**: Tägliche Ausführung von `advanced_backup_checker.py`
+
 ## 🏥 Monitoring & Debugging
 
 ### Container-Gesundheit prüfen
@@ -172,7 +333,20 @@ docker exec log-checker tail -f /app/logs/log_checker.log
 docker exec log-checker tail -f /app/logs/backup_monitor.log
 ```
 
-### Cron-Jobs überprüfen
+### checkbackup-spezifische Debugging
+```bash
+# Erweiterte Backup-Check Logs
+docker exec log-checker tail -f /app/logs/advanced_backup_checker.log
+
+# Generierte Reports prüfen
+docker exec log-checker ls -la /app/logs/logcheck/
+docker exec log-checker cat /app/logs/logcheck/2024-12-29-ErrWarn.log
+
+# Test-Ausführung
+docker exec log-checker python /app/scripts/advanced_backup_checker.py
+```
+
+### Standard Cron-Jobs überprüfen
 ```bash
 # Aktive Cron-Jobs anzeigen
 docker exec log-checker crontab -l
@@ -193,6 +367,21 @@ docker exec log-checker tail -f /var/log/cron.log
 
 ### Häufige Probleme
 
+**checkbackup-Migration Probleme:**
+```bash
+# 1. Pfad-Mappings prüfen
+docker exec log-checker ls -la /app/data/logs/
+# Sollte Datums-Verzeichnisse zeigen: 2024-12-29, 2024-12-28, etc.
+
+# 2. Log-Dateien prüfen
+docker exec log-checker ls -la /app/data/logs/$(date +%Y-%m-%d)/
+# Sollte erforderliche .log-Dateien zeigen
+
+# 3. Keywords und Logfilelist prüfen
+docker exec log-checker cat /app/config/logfilelist.txt
+docker exec log-checker cat /app/config/keywords.txt
+```
+
 **Container startet nicht:**
 ```bash
 # Logs prüfen
@@ -204,7 +393,14 @@ docker run --rm -v $(pwd)/app/config:/app/config python:3.11-slim python -c "imp
 
 **E-Mails werden nicht gesendet:**
 ```bash
-# E-Mail-Test
+# E-Mail-Test für checkbackup-Integration
+docker exec log-checker python -c "
+from advanced_backup_checker import AdvancedBackupChecker
+checker = AdvancedBackupChecker()
+checker.email_sender.test_connection()
+"
+
+# Standard E-Mail-Test
 docker exec log-checker python /app/scripts/email_utils.py test
 
 # SMTP-Konfiguration prüfen
@@ -212,6 +408,22 @@ docker exec log-checker python -c "
 import yaml
 with open('/app/config/config.yaml') as f:
     print(yaml.safe_load(f)['smtp'])
+"
+```
+
+**checkbackup-Script findet keine Dateien:**
+```bash
+# Verzeichnis-Struktur prüfen
+docker exec log-checker find /app/data/logs -name "*.log" | head -10
+
+# Berechtigungen prüfen
+docker exec log-checker ls -la /app/data/logs/
+
+# Konfiguration der erweiterten Backup-Checks
+docker exec log-checker python -c "
+import yaml
+with open('/app/config/config.yaml') as f:
+    print(yaml.safe_load(f)['advanced_backup_check'])
 "
 ```
 
@@ -248,7 +460,14 @@ cp app/config/config.yaml config-backup-$(date +%Y%m%d).yaml
 
 ## 📊 Metriken & Überwachung
 
-Das System generiert detaillierte Berichte mit:
+### checkbackup-Integration Berichte:
+- 📅 **Zeitbasierte Analysen**: Automatische Prüfung von YYYY-MM-DD Verzeichnissen
+- 📋 **Datei-Vollständigkeit**: Prüfung auf fehlende erforderliche Log-Dateien
+- 🔍 **Schlüsselwort-Scanning**: Detaillierte Fehlersuche mit Zeilen-Referenzen
+- 📎 **E-Mail-Anhänge**: Fehler-Reports als Datei-Anhang (genau wie checkbackup)
+- 🏷️ **Server-Identifikation**: Konfigurierbare Server-Namen in E-Mail-Betreffs
+
+### Standard-Monitoring Berichte:
 - ✅ Erfolgreiche/fehlgeschlagene Backups
 - ⚠️ Warnungen und Fehler-Details
 - 📈 Übertragene Datenmengen

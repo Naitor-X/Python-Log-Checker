@@ -11,6 +11,10 @@ services:
       - TZ=Europe/Berlin
       - PYTHONUNBUFFERED=1
     
+    # Lade Umgebungsvariablen aus .env Datei
+    env_file:
+      - .env
+    
     # Volume Mappings
     volumes:
       # Konfigurationsdateien
@@ -19,7 +23,12 @@ services:
       - ./app/scripts:/app/scripts:ro
       # Logs (beschreibbar)
       - ./app/logs:/app/logs:rw
-      # Externe Ordner (anpassbar)
+      # Externe Ordner für erweiterte Backup-Überprüfung
+      # ANPASSEN: Pfad zu deinen Backup-Log-Verzeichnissen mit Datums-Struktur
+      - /mnt/user/logs/rsync:/app/data/logs:ro
+      # Ausgabe-Verzeichnis für Logcheck-Reports
+      - ./logcheck-output:/app/logs/logcheck:rw
+      # Optional: Weitere Log-Verzeichnisse
       - /var/log/backup:/app/data/backup:ro
       - /var/log/system:/app/data/system:ro
     

@@ -1,0 +1,3 @@
+Administration.log
+Nevaris.log
+Share_MSSQL.log

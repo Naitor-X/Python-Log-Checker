@@ -15,6 +15,7 @@ from email.mime.base import MIMEBase
 from email import encoders
 from datetime import datetime
 from typing import List, Optional, Dict, Any
+from env_loader import EnvLoader
 
 class EmailSender:
     """
@@ -29,8 +30,11 @@ class EmailSender:
             config_path: Pfad zur Konfigurationsdatei
         """
         self.config_path = config_path
-        self.config = self._load_config()
-        self.smtp_config = self.config.get('smtp', {})
+        # Lade Konfiguration aus Umgebungsvariablen (primär) oder YAML-Datei (fallback)
+        self.env_config = EnvLoader.load_full_config()
+        self.yaml_config = self._load_config()
+        self.smtp_config = self._merge_smtp_config()
+        self.config = self.env_config  # Verwende Env-Config als Hauptkonfiguration
         self.logger = self._setup_logging()
         
     def _load_config(self) -> Dict[str, Any]:
@@ -69,6 +73,25 @@ class EmailSender:
             logger.setLevel(log_level)
         
         return logger
+    
+    def _merge_smtp_config(self) -> Dict[str, Any]:
+        """
+        Mergt SMTP-Konfiguration aus Umgebungsvariablen und YAML-Datei
+        Umgebungsvariablen haben Priorität
+        
+        Returns:
+            Gemergete SMTP-Konfiguration
+        """
+        yaml_smtp = self.yaml_config.get('smtp', {})
+        env_smtp = self.env_config.get('smtp', {})
+        
+        # Env-Variablen haben Priorität, verwende YAML als Fallback
+        merged_config = yaml_smtp.copy()
+        for key, value in env_smtp.items():
+            if value:  # Nur nicht-leere Werte übernehmen
+                merged_config[key] = value
+        
+        return merged_config
     
     def send_email(self, 
                    subject: str, 

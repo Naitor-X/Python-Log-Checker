@@ -1,0 +1,8 @@
+# Test-Log f\u00fcr Share_MSSQL - 2024-12-28 (kritische Fehler)
+2024-12-28 02:00:01 INFO: Starting MSSQL share backup
+2024-12-28 02:00:02 INFO: Connecting to SQL Server
+2024-12-28 02:00:05 ERROR: Connection failed - access denied for user 'backup'
+2024-12-28 02:00:06 INFO: Retrying with alternative credentials
+2024-12-28 02:00:10 CRITICAL: Authentication failed - backup cannot proceed
+2024-12-28 02:00:11 ERROR: MSSQL backup failed completely
+2024-12-28 02:00:12 INFO: Backup process terminated with errors

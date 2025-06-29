@@ -3,12 +3,19 @@
 
 # Cron-Job Definitionen
 cron_jobs:
-  # Beispiel-Jobs
-  - name: "backup_log_check"
+  # Erweiterte Backup-Überprüfung (basierend auf checkbackup-Script)
+  - name: "advanced_backup_check"
     schedule: "0 6 * * *"  # Täglich um 6:00 Uhr
-    script: "backup_monitor.py"
-    description: "Überprüft Backup-Logs auf Fehler"
+    script: "advanced_backup_checker.py"
+    description: "Erweiterte Backup-Log-Überprüfung mit Datums-Verzeichnissen"
     enabled: true
+    
+  # Original Backup-Monitor (optional)
+  - name: "backup_log_check"
+    schedule: "0 7 * * *"  # Täglich um 7:00 Uhr (nach advanced check)
+    script: "backup_monitor.py"
+    description: "Standard Backup-Log-Überprüfung"
+    enabled: false  # Deaktiviert, da advanced_backup_check verwendet wird
     
   - name: "system_log_check"
     schedule: "*/30 * * * *"  # Alle 30 Minuten
@@ -23,27 +30,22 @@ cron_jobs:
     enabled: false
 
 # SMTP-Konfiguration für E-Mail-Versand
+# WICHTIG: Konfiguration erfolgt jetzt über Umgebungsvariablen (.env Datei)
+# Siehe .env.template für alle verfügbaren Variablen
 smtp:
-  # SMTP-Server Einstellungen
+  # Diese Werte werden aus Umgebungsvariablen geladen
+  # Falls .env nicht vorhanden, werden diese Fallback-Werte verwendet
   server: "smtp.gmail.com"
   port: 587
   use_tls: true
   use_ssl: false
-  
-  # Authentifizierung
   username: "your-email@gmail.com"
-  password: "your-app-password"  # Verwende App-Passwort für Gmail
-  
-  # E-Mail-Einstellungen
+  password: "your-app-password"
   from_email: "your-email@gmail.com"
   from_name: "Log Checker System"
-  
-  # Standard-Empfänger
   default_recipients:
     - "admin@example.com"
     - "monitoring@example.com"
-  
-  # E-Mail-Templates
   templates:
     error_subject: "[FEHLER] {hostname} - {script_name} - {timestamp}"
     warning_subject: "[WARNUNG] {hostname} - {script_name} - {timestamp}"
@@ -109,6 +111,47 @@ security:
   # Dateierweiterungen für Scripts
   allowed_script_extensions:
     - ".py"
+
+# Erweiterte Backup-Check Konfiguration (basierend auf checkbackup-Script)
+advanced_backup_check:
+  # Server-Identifikation
+  server_name: "Docker-Container"
+  
+  # Pfade für Log-Überprüfung
+  log_directory: "/app/data/logs"  # Basis-Verzeichnis mit Datums-Unterordnern (YYYY-MM-DD)
+  output_directory: "/app/logs/logcheck"  # Ausgabe-Verzeichnis für Reports
+  
+  # Konfigurationsdateien
+  logfilelist_path: "/app/config/logfilelist.txt"  # Liste der erforderlichen Log-Dateien
+  keywords_path: "/app/config/keywords.txt"        # Schlüsselwörter für Fehlersuche
+  
+  # Zeitspanne für Überprüfung
+  days_to_check: 1      # Anzahl Tage rückwirkend prüfen
+  start_day_offset: 0   # Offset für Startdatum (0 = heute)
+  
+  # E-Mail-Konfiguration
+  email_subject_prefix: "Backup-Check"
+  
+  # Fallback-Konfiguration (falls Dateien nicht gefunden)
+  required_log_files:
+    - "Administration.log"
+    - "Nevaris.log"
+    - "Share_MSSQL.log"
+  
+  error_keywords:
+    - "denied"
+    - "Denied"
+    - "Warn"
+    - "warn"
+    - "Warning"
+    - "fail"
+    - "Fail"
+    - "error"
+    - "Error"
+    - "ERROR"
+    - "critical"
+    - "Critical"
+    - "CRITICAL"
 
 # System-Einstellungen
 system:
