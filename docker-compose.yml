@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  log-checker:
+    build: .
+    container_name: python-log-checker
+    restart: unless-stopped
+    
+    # Umgebungsvariablen
+    environment:
+      - TZ=Europe/Berlin
+      - PYTHONUNBUFFERED=1
+    
+    # Volume Mappings
+    volumes:
+      # Konfigurationsdateien
+      - ./app/config:/app/config:ro
+      # Python-Scripts
+      - ./app/scripts:/app/scripts:ro
+      # Logs (beschreibbar)
+      - ./app/logs:/app/logs:rw
+      # Externe Ordner (anpassbar)
+      - /var/log/backup:/app/data/backup:ro
+      - /var/log/system:/app/data/system:ro
+    
+    # Netzwerk-Einstellungen
+    networks:
+      - log-checker-network
+    
+    # Ressourcen-Limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.1'
+          memory: 64M
+    
+    # Sicherheits-Einstellungen
+    security_opt:
+      - no-new-privileges:true
+    
+    # Health Check
+    healthcheck:
+      test: ["CMD", "python", "/app/healthcheck.py"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  log-checker-network:
+    driver: bridge
+
+# Beispiel für externe Volumes (optional)
+volumes:
+  log-data:
+    driver: local

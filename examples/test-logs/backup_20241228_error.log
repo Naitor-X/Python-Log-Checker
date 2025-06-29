@@ -1,0 +1,25 @@
+# Beispiel-Log einer fehlgeschlagenen Backup-Operation
+2024-12-28 02:00:01 INFO: Starting backup process for server: db-02
+2024-12-28 02:00:01 INFO: Backup target: /backup/db-02/20241228_020001
+2024-12-28 02:00:02 INFO: Checking available disk space: 50 GB available
+2024-12-28 02:00:02 WARNING: Low disk space warning - less than 100 GB available
+2024-12-28 02:00:03 INFO: Starting file system backup...
+2024-12-28 02:03:45 INFO: Files processed: 8,231 files (1.2 GB)
+2024-12-28 02:03:46 INFO: Starting database backup...
+2024-12-28 02:05:12 WARNING: Database connection timeout, retrying...
+2024-12-28 02:05:42 ERROR: Failed to connect to database after 3 attempts
+2024-12-28 02:05:42 ERROR: MySQL Error 1045: Access denied for user 'backup'@'localhost' (using password: YES)
+2024-12-28 02:05:42 ERROR: Database backup failed
+2024-12-28 02:05:43 INFO: Continuing with file system backup only...
+2024-12-28 02:05:43 INFO: Creating compressed archive...
+2024-12-28 02:08:15 INFO: Archive created: db-02_backup_partial_20241228_020001.tar.gz (950 MB)
+2024-12-28 02:08:16 WARNING: Backup incomplete - database backup missing
+2024-12-28 02:08:16 INFO: Calculating checksums...
+2024-12-28 02:08:18 INFO: MD5: x1y2z3a4b5c6d7e8f9g0
+2024-12-28 02:08:19 INFO: Transferring partial backup to remote storage...
+2024-12-28 02:10:45 ERROR: Transfer failed - connection to backup server lost
+2024-12-28 02:10:45 ERROR: rsync: connection unexpectedly closed (0 bytes received so far)
+2024-12-28 02:10:46 ERROR: Backup transfer failed
+2024-12-28 02:10:46 ERROR: Backup process failed with errors
+2024-12-28 02:10:46 ERROR: Duration: 00:10:45
+2024-12-28 02:10:46 CRITICAL: Backup operation failed - manual intervention required

@@ -1,0 +1,122 @@
+# Konfigurationsdatei für Python Log Checker
+# Alle Einstellungen für Cron-Jobs, SMTP und Pfade
+
+# Cron-Job Definitionen
+cron_jobs:
+  # Beispiel-Jobs
+  - name: "backup_log_check"
+    schedule: "0 6 * * *"  # Täglich um 6:00 Uhr
+    script: "backup_monitor.py"
+    description: "Überprüft Backup-Logs auf Fehler"
+    enabled: true
+    
+  - name: "system_log_check"
+    schedule: "*/30 * * * *"  # Alle 30 Minuten
+    script: "system_monitor.py"
+    description: "Überwacht System-Logs"
+    enabled: true
+    
+  - name: "weekly_report"
+    schedule: "0 8 * * 1"  # Montags um 8:00 Uhr
+    script: "weekly_report.py"
+    description: "Erstellt wöchentlichen Bericht"
+    enabled: false
+
+# SMTP-Konfiguration für E-Mail-Versand
+smtp:
+  # SMTP-Server Einstellungen
+  server: "smtp.gmail.com"
+  port: 587
+  use_tls: true
+  use_ssl: false
+  
+  # Authentifizierung
+  username: "your-email@gmail.com"
+  password: "your-app-password"  # Verwende App-Passwort für Gmail
+  
+  # E-Mail-Einstellungen
+  from_email: "your-email@gmail.com"
+  from_name: "Log Checker System"
+  
+  # Standard-Empfänger
+  default_recipients:
+    - "admin@example.com"
+    - "monitoring@example.com"
+  
+  # E-Mail-Templates
+  templates:
+    error_subject: "[FEHLER] {hostname} - {script_name} - {timestamp}"
+    warning_subject: "[WARNUNG] {hostname} - {script_name} - {timestamp}"
+    success_subject: "[OK] {hostname} - {script_name} - {timestamp}"
+
+# Pfad-Konfiguration
+paths:
+  # Externe gemappte Verzeichnisse
+  backup_logs: "/app/data/backup"
+  system_logs: "/app/data/system"
+  
+  # Interne Pfade
+  scripts_dir: "/app/scripts"
+  logs_dir: "/app/logs"
+  temp_dir: "/tmp"
+  
+  # Spezifische Log-Dateien
+  log_patterns:
+    backup: "backup_*.log"
+    system: "syslog*"
+    error: "error*.log"
+
+# Logging-Konfiguration
+logging:
+  # Log-Level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: "INFO"
+  
+  # Log-Datei
+  file: "/app/logs/log_checker.log"
+  
+  # Rotation
+  max_size_mb: 10
+  backup_count: 5
+  
+  # Format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+
+# Monitoring-Einstellungen
+monitoring:
+  # Health-Check Intervall (Sekunden)
+  health_check_interval: 30
+  
+  # Timeout für Script-Ausführung (Sekunden)
+  script_timeout: 300
+  
+  # Maximale Anzahl gleichzeitiger Scripts
+  max_concurrent_scripts: 3
+  
+  # Retry-Verhalten
+  max_retries: 3
+  retry_delay: 60
+
+# Sicherheits-Einstellungen
+security:
+  # Erlaubte Script-Pfade
+  allowed_script_paths:
+    - "/app/scripts"
+  
+  # Maximale Log-Dateigröße (MB)
+  max_log_file_size: 100
+  
+  # Dateierweiterungen für Scripts
+  allowed_script_extensions:
+    - ".py"
+
+# System-Einstellungen
+system:
+  # Zeitzone
+  timezone: "Europe/Berlin"
+  
+  # Hostname (wird automatisch erkannt, kann überschrieben werden)
+  hostname: ""
+  
+  # Umgebung (development, staging, production)
+  environment: "production"

@@ -1,0 +1,150 @@
+version: '3.8'
+
+services:
+  log-checker:
+    build: 
+      context: ..
+      dockerfile: Dockerfile
+    container_name: python-log-checker-prod
+    restart: always
+    
+    # Produktions-Umgebung
+    environment:
+      - TZ=Europe/Berlin
+      - PYTHONUNBUFFERED=1
+      - ENV=production
+      # SMTP-Credentials aus Umgebungsvariablen
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+    
+    # Produktions-Volume-Mappings
+    volumes:
+      # Produktions-Konfiguration
+      - ./examples/config-production.yaml:/app/config/config.yaml:ro
+      
+      # Scripts (read-only)
+      - ../app/scripts:/app/scripts:ro
+      
+      # Logs (persistent storage)
+      - prod-logs:/app/logs:rw
+      
+      # Produktions-Backup-Logs (anpassen für deine Server)
+      - /var/log/backup:/app/data/backup:ro
+      - /var/log/system:/app/data/system:ro
+      - /var/log/auth.log:/app/data/system/auth.log:ro
+      
+      # Weitere Server-spezifische Logs
+      - /var/log/nginx:/app/data/nginx:ro
+      - /var/log/mysql:/app/data/mysql:ro
+    
+    # Produktions-Netzwerk
+    networks:
+      - monitoring-network
+    
+    # Produktions-Ressourcen-Limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.2'
+          memory: 128M
+    
+    # Sicherheits-Einstellungen
+    security_opt:
+      - no-new-privileges:true
+    read_only: false  # Logs müssen geschrieben werden
+    
+    # Produktions-Health-Check
+    healthcheck:
+      test: ["CMD", "python", "/app/healthcheck.py"]
+      interval: 60s
+      timeout: 30s
+      retries: 3
+      start_period: 30s
+    
+    # Logging-Konfiguration für Produktion
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+        labels: "production,monitoring"
+
+  # Optional: Log-Aggregation mit ELK Stack
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: elasticsearch-monitoring
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms256m -Xmx256m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - monitoring-network
+    profiles:
+      - elk  # Nur mit --profile elk starten
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.10.0
+    container_name: logstash-monitoring
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+      - prod-logs:/var/log/app:ro
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+    profiles:
+      - elk
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.10.0
+    container_name: kibana-monitoring
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - monitoring-network
+    depends_on:
+      - elasticsearch
+    profiles:
+      - elk
+
+# Produktions-Netzwerke
+networks:
+  monitoring-network:
+    driver: bridge
+    name: monitoring-prod
+
+# Persistente Volumes für Produktion
+volumes:
+  prod-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/monitoring/logs
+  
+  elasticsearch-data:
+    driver: local
+
+# Produktions-Deployment-Kommandos:
+#
+# Basis-Setup:
+# docker-compose -f docker-compose.production.yml up -d
+#
+# Mit ELK-Stack:
+# docker-compose -f docker-compose.production.yml --profile elk up -d
+#
+# Nur Log-Checker:
+# docker-compose -f docker-compose.production.yml up -d log-checker
+#
+# Logs verfolgen:
+# docker-compose -f docker-compose.production.yml logs -f log-checker
+#
+# Health-Check:
+# docker-compose -f docker-compose.production.yml exec log-checker python /app/healthcheck.py

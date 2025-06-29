@@ -1,0 +1,126 @@
+# Produktions-Konfiguration für Python Log Checker
+# Optimiert für 24/7 Server-Monitoring
+
+# Cron-Job Definitionen für Produktion
+cron_jobs:
+  # Kritische Backup-Überwachung (alle 6 Stunden)
+  - name: "backup_check_critical"
+    schedule: "0 */6 * * *"
+    script: "backup_monitor.py"
+    description: "Kritische Backup-Logs alle 6 Stunden prüfen"
+    enabled: true
+    
+  # System-Monitoring (alle 30 Minuten)
+  - name: "system_monitor_frequent"
+    schedule: "*/30 * * * *"
+    script: "system_monitor.py"
+    description: "System-Logs auf kritische Ereignisse überwachen"
+    enabled: true
+    
+  # Täglicher Backup-Report (morgens um 7:00)
+  - name: "daily_backup_report"
+    schedule: "0 7 * * *"
+    script: "backup_monitor.py"
+    description: "Täglicher Backup-Statusbericht"
+    enabled: true
+    
+  # Wöchentlicher Gesamtbericht (Montag 8:00)
+  - name: "weekly_summary"
+    schedule: "0 8 * * 1"
+    script: "weekly_report.py"
+    description: "Wöchentlicher Zusammenfassungsbericht"
+    enabled: true
+
+# Produktions-SMTP Konfiguration
+smtp:
+  server: "smtp.company.com"
+  port: 587
+  use_tls: true
+  use_ssl: false
+  
+  # Verwende Umgebungsvariablen für Credentials
+  username: "${SMTP_USERNAME}"
+  password: "${SMTP_PASSWORD}"
+  
+  from_email: "monitoring@company.com"
+  from_name: "Server Monitoring System"
+  
+  # Produktions-Empfänger
+  default_recipients:
+    - "sysadmin@company.com"
+    - "monitoring-team@company.com"
+    - "backup-alerts@company.com"
+  
+  # Professionelle E-Mail-Templates
+  templates:
+    error_subject: "[KRITISCH] {hostname} Backup-Fehler - {timestamp}"
+    warning_subject: "[WARNUNG] {hostname} System-Warnung - {timestamp}"
+    success_subject: "[INFO] {hostname} Backup-Status - {timestamp}"
+
+# Produktions-Pfade
+paths:
+  # Gemappte Produktions-Verzeichnisse
+  backup_logs: "/app/data/backup"
+  system_logs: "/app/data/system"
+  
+  scripts_dir: "/app/scripts"
+  logs_dir: "/app/logs"
+  temp_dir: "/tmp"
+  
+  # Spezifische Log-Patterns für Produktion
+  log_patterns:
+    backup: "backup-*.log"
+    system: "syslog*"
+    error: "error*.log"
+    security: "auth.log*"
+
+# Produktions-Logging
+logging:
+  level: "INFO"
+  file: "/app/logs/production.log"
+  
+  # Größere Rotation für Produktion
+  max_size_mb: 50
+  backup_count: 10
+  
+  format: "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+
+# Erweiterte Monitoring-Einstellungen
+monitoring:
+  # Häufigere Health-Checks
+  health_check_interval: 60
+  
+  # Längere Timeouts für große Backups
+  script_timeout: 1800  # 30 Minuten
+  
+  # Mehr gleichzeitige Scripts erlauben
+  max_concurrent_scripts: 5
+  
+  # Aggressivere Retry-Politik
+  max_retries: 5
+  retry_delay: 30
+
+# Produktions-Sicherheit
+security:
+  allowed_script_paths:
+    - "/app/scripts"
+    - "/app/custom-scripts"  # Zusätzliche Custom Scripts
+  
+  # Größere Log-Dateien in Produktion
+  max_log_file_size: 500
+  
+  allowed_script_extensions:
+    - ".py"
+    - ".sh"  # Shell-Scripts in Produktion erlaubt
+
+# System-Einstellungen für Produktion
+system:
+  timezone: "Europe/Berlin"
+  hostname: "prod-backup-monitor"
+  environment: "production"
+  
+  # Produktions-spezifische Einstellungen
+  max_log_retention_days: 30
+  cleanup_temp_files: true
+  enable_performance_monitoring: true

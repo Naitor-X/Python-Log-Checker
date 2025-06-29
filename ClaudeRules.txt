@@ -1,0 +1,76 @@
+# ClaudeCode Regeln
+
+## Einführung
+- Starte jede Antwort mit dem Emoji: 🤖 UND kommuniziere in deutscher Sprache.
+- Übernimm diese Regeln in die Claude.md beim Initialisieren.
+
+## Projektübersicht
+
+Suche nach der PRD.md Datei um Informationen zum Projekt zu erhalten. Wenn keine Vorhanden ist, wirst du die Informationen mittels Prompt bekommen.
+
+## Code-Qualität
+
+- Verwende aktuelle Best Practices für den vereinbarten Tech-Stack  
+- Priorisiere Lesbarkeit und Einfachheit des Codes  
+- Implementiere atomare, wiederverwendbare Komponenten/Funktionen  
+- Halte dich an DRY (Don't Repeat Yourself) und KISS (Keep It Simple, Stupid) Prinzipien  
+- Achte auf Sicherheitsaspekte wie Eingabevalidierung, Datenschutz und sichere API-Nutzung  
+- Optimiere Code für Wartbarkeit und Erweiterbarkeit
+
+## Dokumentation
+
+- Dokumentiere jede Komponente/Funktion mit einem beschreibenden Kommentar  
+- Erkläre komplexe Algorithmen oder Geschäftslogik detailliert  
+- Verwende JSDoc (bei JavaScript/TypeScript) oder vergleichbare Dokumentationsstandards  
+- Notiere bei jeder wichtigen Implementierungsentscheidung kurz das "Warum"  
+- Sammle automatisch Informationen für die spätere README.md  
+- Dokumentiere externe Abhängigkeiten und deren Zweck
+
+## Entwicklungs-Workflow
+
+### Code-Modifikations-Workflow
+
+1. **Identifiziere betroffene Dateien**: Prüfe die Projekt-Map, welche Dateien für die Aufgabe relevant sind  
+2. **Minimaler Eingriff**: Plane nur Änderungen, die für die aktuelle Aufgabe notwendig sind  
+3. **Erhaltungsprinzip**: Bewahre bestehende Funktionalität, Parameter und Interfaces  
+4. **Implementierung**: Führe die geplanten Änderungen durch  
+5. **Verifizierung**: Bestätige, dass die Änderungen nicht bestehende Funktionen beeinträchtigen  
+6. **Map-Update**: Aktualisiere die Projekt-Map, wenn neue Dateien oder Abhängigkeiten hinzugefügt wurden
+
+- Bei jeder Änderung: Dokumentiere kurz die Auswirkung auf andere Komponenten  
+- Bei größeren Refactorings: Schlage diese als separate Aufgabe vor  
+- Beende eine Aufgabe vollständig, bevor du zur nächsten übergehst  
+- Bestätige die Funktionsfähigkeit einer Implementierung explizit
+
+## Fehlerbehebung
+
+- Dokumentiere jedes aufgetretene Problem  
+- Analysiere die Fehlerursache systematisch  
+- Schlage mehrere mögliche Lösungen vor, bevor du eine implementierst  
+- Verifiziere die Lösung mit geeigneten Tests  
+- Füge die Erkenntnis zur "Lessons Learned"-Sektion hinzu
+
+## Lessons Learned
+
+
+# Lessons Learned
+
+## Erfolgreiche Strategien
+- [Datum] Strategie/Entscheidung: Beschreibung und warum es erfolgreich war
+
+## Vermiedene Fallstricke
+- [Datum] Problem: Beschreibung des Problems
+  - Ursache: Warum es auftrat
+  - Lösung: Wie es gelöst wurde
+  - Vermeidung: Wie es künftig vermieden werden kann
+
+
+- Aktualisiere die Lessons Learned nach jeder abgeschlossenen Aufgabe  
+- Reflektiere aktiv über Schwierigkeiten und Erfolge  
+- Berücksichtige diese Erkenntnisse bei zukünftigen Implementierungen
+
+## Prompting-Richtlinien
+
+- Solltest du eine neue Aufgabe beginnen, gib an: "Implementiere jetzt Feature/Task/Funktion X"
+- Wenn du Feedback zu einer Implementierung geben möchtest, beginne mit "Feedback zu Task X:"  
+- Bevorzuge präzise Anweisungen über allgemeine Aufträge

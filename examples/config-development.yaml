@@ -1,0 +1,120 @@
+# Entwicklungs-Konfiguration für Python Log Checker
+# Optimiert für Testing und Entwicklung
+
+# Cron-Job Definitionen für Entwicklung (häufiger für Tests)
+cron_jobs:
+  # Test-Backup-Check (alle 10 Minuten)
+  - name: "backup_test"
+    schedule: "*/10 * * * *"
+    script: "backup_monitor.py"
+    description: "Test-Backup-Monitoring alle 10 Minuten"
+    enabled: true
+    
+  # System-Test (alle 15 Minuten)
+  - name: "system_test"
+    schedule: "*/15 * * * *"
+    script: "system_monitor.py"
+    description: "System-Test alle 15 Minuten"
+    enabled: false  # Standardmäßig deaktiviert
+    
+  # Täglicher Test-Report (nur werktags)
+  - name: "daily_test_report"
+    schedule: "0 9 * * 1-5"
+    script: "weekly_report.py"
+    description: "Täglicher Test-Bericht (Werktage)"
+    enabled: false
+
+# Test-SMTP Konfiguration
+smtp:
+  # Lokaler SMTP-Server oder Test-Service
+  server: "localhost"
+  port: 1025  # MailHog oder ähnlicher Test-SMTP
+  use_tls: false
+  use_ssl: false
+  
+  username: "test@localhost"
+  password: "test"
+  
+  from_email: "test-monitoring@localhost"
+  from_name: "Test Monitoring System"
+  
+  # Test-Empfänger
+  default_recipients:
+    - "developer@localhost"
+    - "test@localhost"
+  
+  # Test-Templates
+  templates:
+    error_subject: "[TEST-ERROR] {hostname} - {script_name} - {timestamp}"
+    warning_subject: "[TEST-WARN] {hostname} - {script_name} - {timestamp}"
+    success_subject: "[TEST-OK] {hostname} - {script_name} - {timestamp}"
+
+# Entwicklungs-Pfade
+paths:
+  # Test-Verzeichnisse
+  backup_logs: "/app/data/test-backup"
+  system_logs: "/app/data/test-system"
+  
+  scripts_dir: "/app/scripts"
+  logs_dir: "/app/logs"
+  temp_dir: "/tmp/test"
+  
+  # Test-Log-Patterns
+  log_patterns:
+    backup: "test-backup*.log"
+    system: "test-system*.log"
+    error: "test-error*.log"
+
+# Debug-Logging
+logging:
+  level: "DEBUG"  # Detailliertes Logging für Entwicklung
+  file: "/app/logs/development.log"
+  
+  # Kleinere Dateien für schnelle Entwicklung
+  max_size_mb: 5
+  backup_count: 3
+  
+  # Ausführliches Format mit mehr Details
+  format: "%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(funcName)s() - %(message)s"
+  date_format: "%Y-%m-%d %H:%M:%S"
+
+# Entwicklungs-Monitoring
+monitoring:
+  # Häufigere Checks für schnelles Feedback
+  health_check_interval: 15
+  
+  # Kürzere Timeouts für schnelle Tests
+  script_timeout: 60
+  
+  # Weniger gleichzeitige Scripts
+  max_concurrent_scripts: 2
+  
+  # Schnelle Retries
+  max_retries: 2
+  retry_delay: 10
+
+# Entwicklungs-Sicherheit (weniger restriktiv)
+security:
+  allowed_script_paths:
+    - "/app/scripts"
+    - "/app/test-scripts"
+    - "/tmp"  # Für temporäre Test-Scripts
+  
+  max_log_file_size: 50  # Kleinere Limits
+  
+  allowed_script_extensions:
+    - ".py"
+    - ".sh"
+    - ".test"  # Test-Dateien erlaubt
+
+# System-Einstellungen für Entwicklung
+system:
+  timezone: "Europe/Berlin"
+  hostname: "dev-backup-monitor"
+  environment: "development"
+  
+  # Development-spezifische Einstellungen
+  max_log_retention_days: 7  # Kürzere Retention
+  cleanup_temp_files: true
+  enable_performance_monitoring: false  # Für Performance während Entwicklung
+  debug_mode: true

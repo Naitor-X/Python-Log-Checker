@@ -1,0 +1,5 @@
+pyyaml==6.0.1
+smtplib-ssl==1.0.4
+schedule==1.2.0
+python-crontab==3.0.0
+watchdog==3.0.0

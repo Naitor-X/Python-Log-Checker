@@ -1,0 +1,21 @@
+# Beispiel System-Log mit verschiedenen Event-Typen
+Dec 29 08:15:23 web-server kernel: [12345.678] CPU: 0 PID: 1234 Comm: apache2 Not tainted 5.15.0
+Dec 29 08:15:24 web-server systemd[1]: Started Apache HTTP Server
+Dec 29 08:20:15 web-server sshd[5678]: Failed password for invalid user admin from 192.168.1.100 port 22 ssh2
+Dec 29 08:20:18 web-server sshd[5679]: Failed password for invalid user root from 192.168.1.100 port 22 ssh2
+Dec 29 08:20:21 web-server sshd[5680]: Connection closed by invalid user admin 192.168.1.100 port 22
+Dec 29 08:25:30 web-server rsyslog: INFO: rsyslog started
+Dec 29 08:30:45 web-server kernel: [12567.890] Out of memory: Kill process 9876 (java) score 123 or sacrifice child
+Dec 29 08:30:46 web-server kernel: [12567.891] Killed process 9876 (java) total-vm:4GB, anon-rss:2GB, file-rss:0kB
+Dec 29 08:35:12 web-server nginx[2345]: 2024/12/29 08:35:12 [error] 2345#2345: *67890 connect() failed (111: Connection refused) while connecting to upstream
+Dec 29 08:40:23 web-server systemd[1]: WARNING: Some service failed to start
+Dec 29 08:45:33 web-server disk-check: WARNING: Disk /dev/sda1 is 95% full
+Dec 29 08:50:44 web-server network-monitor: ERROR: Network interface eth0 is down
+Dec 29 08:55:55 web-server security-daemon: CRITICAL: Intrusion attempt detected from 192.168.1.100
+Dec 29 09:00:00 web-server cron[1111]: (root) CMD (/usr/local/bin/backup-check.sh)
+Dec 29 09:05:10 web-server backup-service: INFO: Daily backup completed successfully
+Dec 29 09:10:20 web-server logrotate: INFO: Log rotation completed
+Dec 29 09:15:30 web-server systemd[1]: Stopped Apache HTTP Server
+Dec 29 09:15:31 web-server systemd[1]: Started Apache HTTP Server
+Dec 29 09:20:40 web-server kernel: [13000.123] INFO: task apache2:12345 blocked for more than 120 seconds
+Dec 29 09:25:50 web-server authentication failure: user unknown from 192.168.1.101
